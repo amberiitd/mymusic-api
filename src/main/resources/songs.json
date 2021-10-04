@@ -1,0 +1,62 @@
+[
+  {
+    "title": "Maula Mere Maula",
+    "artist": "Javel Ali",
+    "album": "Delhi 6",
+    "duration": {
+      "hour": 0,
+      "min": 6,
+      "sec": 34
+    }
+  },
+  {
+    "title": "Lamha Lamha",
+    "artist": "K.K",
+    "album": "Gangster",
+    "duration": {
+      "hour": 0,
+      "min": 5,
+      "sec": 54
+    }
+  },
+  {
+    "title": "Mast Magan",
+    "artist": "Arijit Singh",
+    "album": "Two States",
+    "duration": {
+      "hour": 0,
+      "min": 5,
+      "sec": 45
+    }
+  },
+  {
+    "title": "Chupke Chupke, Raat Din",
+    "artist": "Ghulam Ali",
+    "album": "Nikaah",
+    "duration": {
+      "hour": 0,
+      "min": 8,
+      "sec": 56
+    }
+  },
+  {
+    "title": "Josephine",
+    "artist": "Brandi Carlile",
+    "album": "The Story",
+    "duration": {
+      "hour": 0,
+      "min": 4,
+      "sec": 34
+    }
+  },
+  {
+    "title": "Mama! Can I?",
+    "artist": "Bobbie Gentry",
+    "album": "",
+    "duration": {
+      "hour": 0,
+      "min": 4,
+      "sec": 37
+    }
+  }
+]
