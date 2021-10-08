@@ -3,3 +3,14 @@ mongo:
   db: mymusic
   songCollection: song
   userPrefCollection: userPref
+
+swagger:
+  oauth:
+    serverUrl: http://localhost:8090
+    clientId: mymusic-client
+    clientSecret: secret
+
+#logging.level.org.springframework.web: DEBUG
+#logging.level.io.springfox: DEBUG
+
+

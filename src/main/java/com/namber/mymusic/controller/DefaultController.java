@@ -5,10 +5,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class DefaultController {
-    @GetMapping("")
-    public String test(){
-        return "MyM API works";
-    }
 
     @GetMapping("/welcome")
     public String welcome(){

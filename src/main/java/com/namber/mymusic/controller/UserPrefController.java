@@ -66,6 +66,4 @@ public class UserPrefController {
         userPrefService.updatePlayHistory(title);
     }
 
-
-
 }
