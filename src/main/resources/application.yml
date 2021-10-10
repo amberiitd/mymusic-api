@@ -9,6 +9,13 @@ swagger:
     serverUrl: http://localhost:8090
     clientId: mymusic-client
     clientSecret: secret
+security:
+  oauth2:
+    client:
+      client-id: mymusic-api
+      client-secret: secret
+    resource:
+      tokenInfoUri: http://localhost:8090/oauth/check_token
 
 #logging.level.org.springframework.web: DEBUG
 #logging.level.io.springfox: DEBUG

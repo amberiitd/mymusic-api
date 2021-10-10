@@ -1,0 +1,25 @@
+swagger: "2.0"
+info:
+  description: "An API to fetch and push song info"
+  version: "1.0.0"
+  title: "MyMusic API"
+  termsOfService: "Terms of Service"
+  contact:
+    email: "amberiitd15@gmail.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+
+paths:
+  /welcome:
+    get:
+      # these method props are required for swagger to work
+      consumes:
+        - "application/json"
+        - "application/xml"
+      produces:
+        - "application/xml"
+        - "application/json"
+      responses:
+        405:
+          description: "Invalid input"
