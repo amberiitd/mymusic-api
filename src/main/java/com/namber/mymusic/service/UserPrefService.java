@@ -27,7 +27,7 @@ public class UserPrefService {
         userPrefRepository.addToPlayList(plName, title);
     }
 
-    public ArrayList<Song> getFavSongs() {
+    public ArrayList<String> getFavSongs() {
         return userPrefRepository.getFavorites();
     }
 
@@ -35,7 +35,7 @@ public class UserPrefService {
         userPrefRepository.addToFavorites(title);
     }
 
-    public ArrayList<Song> getPlayHistory() {
+    public ArrayList<String> getPlayHistory() {
         return userPrefRepository.getRecentlyPlayed();
     }
 

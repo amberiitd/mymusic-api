@@ -13,7 +13,7 @@ public class JobController {
     SongPusher songPusher;
 
     @PutMapping("/push-songs")
-    public void pushSongsToDB(){
+    public void pushSongsToDB() throws Exception{
         songPusher.pushSongsToDB();
     }
 }

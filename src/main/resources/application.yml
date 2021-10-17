@@ -17,6 +17,12 @@ security:
     resource:
       tokenInfoUri: http://localhost:8090/oauth/check_token
 
+resource:
+  rootPath: C:\Users\amber\resource\mymusic
+
+inventory:
+  rootPath: C:\Users\amber\inventory\mymusic
+
 #logging.level.org.springframework.web: DEBUG
 #logging.level.io.springfox: DEBUG
 

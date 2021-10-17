@@ -7,9 +7,6 @@ import java.util.ArrayList;
 
 @Data
 public class UserPreference {
-    @Id
-    private String id;
-
     private String userId;
     private ArrayList<PlayList> playLists;
     private ArrayList<String> favorite;

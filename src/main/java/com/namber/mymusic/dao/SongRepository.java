@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
@@ -73,5 +74,15 @@ public class SongRepository {
 
     public Long getTotalSongsCount() {
         return 1L;
+    }
+
+    public FileInputStream getSongSource(String title) throws  Exception{
+        Document songDoc = collection.find(new Document("title", title)).first();
+        String src = null;
+        if( songDoc != null ){
+            src = mapper.map( songDoc , Song.class).getSrc();
+        }
+        FileInputStream file = new FileInputStream(src);
+        return file;
     }
 }

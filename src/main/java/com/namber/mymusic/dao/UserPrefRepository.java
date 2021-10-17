@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Repository
@@ -25,9 +26,6 @@ import java.util.stream.Collectors;
 public class UserPrefRepository {
     @Autowired
     MongoDBConfig mongoDBConfig;
-
-    @Autowired
-    SongService songService;
 
     @Autowired
     UserService userService;
@@ -41,6 +39,7 @@ public class UserPrefRepository {
 
     private Document docParser = new Document();
     private Gson gson = new Gson();
+    private static int MAX_RECENT_SIZE = 10;
 
     public ArrayList<PlayList> getAllPlayLists(){
         return getUserPref().getPlayLists();
@@ -59,18 +58,12 @@ public class UserPrefRepository {
         }
         PlayList newPlayList= new PlayList();
         newPlayList.setPlName(plName);
+        newPlayList.setSongs(new ArrayList());
 
         playLists.add(newPlayList);
 
-        ArrayList<Document> docList = new ArrayList<>();
-        playLists.forEach( playList ->{
-            docList.add(docParser.parse(gson.toJson(playList)));
-        });
-        collection
-                .updateOne(
-                        new Document(AttributeConstants.USER_ID, userService.getActiveUserId()),
-                        new Document(MongoQueryOperator.SET, new Document(AttributeConstants.PLAY_LISTS, docList))
-                );
+        updateUserPref(AttributeConstants.PLAY_LISTS, toDocList(playLists));
+
     }
 
     public void deletePlaylist(String plName){
@@ -83,15 +76,8 @@ public class UserPrefRepository {
             playLists = (ArrayList<PlayList>) playLists.stream().filter(pl -> !plName.equals(pl.getPlName())).collect(Collectors.toList());
         }
 
-        ArrayList<Document> docList = new ArrayList<>();
-        playLists.forEach( playList ->{
-            docList.add(docParser.parse(gson.toJson(playList)));
-        });
-        collection
-                .updateOne(
-                        new Document(AttributeConstants.USER_ID, userService.getActiveUserId()),
-                        new Document(MongoQueryOperator.SET, new Document(AttributeConstants.PLAY_LISTS, docList))
-                );
+        updateUserPref(AttributeConstants.PLAY_LISTS, toDocList(playLists));
+
     }
 
     public void addToPlayList(String plName, String title){
@@ -119,15 +105,8 @@ public class UserPrefRepository {
             pl.setSongs(songList);
         }
 
-        ArrayList<Document> docList = new ArrayList<>();
-        playLists.forEach( playList ->{
-            docList.add(docParser.parse(gson.toJson(playList)));
-        });
-        collection
-                .updateOne(
-                        new Document(AttributeConstants.USER_ID, userService.getActiveUserId()),
-                        new Document(MongoQueryOperator.SET, new Document(AttributeConstants.PLAY_LISTS, docList))
-                );
+        updateUserPref(AttributeConstants.PLAY_LISTS, toDocList(playLists));
+
     }
 
     public void removeFromPlayList(String plName, String title){
@@ -147,21 +126,15 @@ public class UserPrefRepository {
             pl.setSongs((ArrayList<String>) pl.getSongs().stream().filter(song -> !title.equals(song)).collect(Collectors.toList()));
         }
 
-        ArrayList<Document> docList = new ArrayList<>();
-        playLists.forEach( playList ->{
-            docList.add(docParser.parse(gson.toJson(playList)));
-        });
-        collection
-                .updateOne(
-                        new Document(AttributeConstants.USER_ID, userService.getActiveUserId()),
-                        new Document(MongoQueryOperator.SET, new Document(AttributeConstants.PLAY_LISTS, docList))
-                );
+
+        updateUserPref(AttributeConstants.PLAY_LISTS, toDocList(playLists));
+
     }
 
-    public ArrayList<Song> getFavorites(){
+    public ArrayList<String> getFavorites(){
         ArrayList<String> favSongTitles = getUserPref().getFavorite();
 
-        return songService.getSongs(favSongTitles);
+        return favSongTitles;
     }
 
     public void addToFavorites(String title){
@@ -176,11 +149,8 @@ public class UserPrefRepository {
         if (favList.stream().filter( songTitle -> title.equals(songTitle)).collect(Collectors.toList()).size() == 0) {
             favList.add(title);
         }
-        collection
-                .updateOne(
-                        new Document(AttributeConstants.USER_ID, userService.getActiveUserId()),
-                        new Document(MongoQueryOperator.SET, new Document(AttributeConstants.FAVORITE, favList))
-                );
+        updateUserPref(AttributeConstants.FAVORITE, favList);
+
     }
     public void removeFavorites(String title){
         ArrayList<String> favList = getUserPref().getFavorite();
@@ -189,17 +159,14 @@ public class UserPrefRepository {
             return;
         }
         favList = (ArrayList<String>) favList.stream().filter(songTitle -> !title.equals(songTitle)).collect(Collectors.toList());
-        collection
-                .updateOne(
-                        new Document(AttributeConstants.USER_ID, userService.getActiveUserId()),
-                        new Document(MongoQueryOperator.SET, new Document(AttributeConstants.FAVORITE, favList))
-                );
+        updateUserPref(AttributeConstants.FAVORITE, favList);
+
     }
 
-    public ArrayList<Song> getRecentlyPlayed(){
+    public ArrayList<String> getRecentlyPlayed(){
         ArrayList<String> favSongTitles = getUserPref().getRecent();
 
-        return songService.getSongs(favSongTitles);
+        return favSongTitles;
     }
 
     public void addToRecent(String title){
@@ -208,13 +175,28 @@ public class UserPrefRepository {
         if (recentList == null){
             recentList = new ArrayList();
         }
-        if (!title.equals(recentList.get(recentList.size()-1))){
+        if (recentList.size() == 0 || !title.equals(recentList.get(recentList.size()-1))){
             recentList.add(title);
         }
+        if(recentList.size() > MAX_RECENT_SIZE){
+            recentList.remove(0);
+        }
+        updateUserPref(AttributeConstants.RECENT, recentList);
+    }
+
+    private List<Document> toDocList(List objectList){
+        ArrayList<Document> docList = new ArrayList<>();
+        objectList.forEach( playList ->{
+            docList.add(docParser.parse(gson.toJson(playList)));
+        });
+
+        return docList;
+    }
+    private void updateUserPref(String prop, List propVal){
         collection
                 .updateOne(
                         new Document(AttributeConstants.USER_ID, userService.getActiveUserId()),
-                        new Document(MongoQueryOperator.SET, new Document(AttributeConstants.RECENT, recentList))
+                        new Document(MongoQueryOperator.SET, new Document(prop, propVal))
                 );
     }
 

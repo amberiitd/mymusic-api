@@ -3,8 +3,11 @@ package com.namber.mymusic.controller;
 import com.namber.mymusic.model.Song;
 import com.namber.mymusic.service.SongService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.ArrayList;
 
@@ -31,6 +34,14 @@ public class SongController {
     public void addNewSong(@RequestBody Song song){
 
         songService.saveNew(song);
+    }
+
+    @GetMapping(
+        value ="/get-source",
+        produces = MediaType.APPLICATION_OCTET_STREAM_VALUE
+    )
+    public byte[] getSource(@RequestParam String title) throws Exception{
+        return IOUtils.toByteArray(songService.getSource(title));
     }
 
     @GetMapping("/get-songs-count")
