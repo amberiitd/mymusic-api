@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.awt.*;
 import java.util.ArrayList;
 
 @RestController
@@ -47,5 +48,14 @@ public class SongController {
     @GetMapping("/get-songs-count")
     public Long getTotalSongsCount(){
         return songService.getTotalCount();
+    }
+
+    @GetMapping(
+            value = "/thumbnail",
+            produces = MediaType.IMAGE_JPEG_VALUE
+    )
+    public byte[] getThumbnail(@RequestParam String title) throws Exception{
+        return songService.getThumbnail(title);
+
     }
 }

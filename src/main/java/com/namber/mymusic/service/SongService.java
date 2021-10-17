@@ -3,11 +3,13 @@ package com.namber.mymusic.service;
 import com.namber.mymusic.dao.SongRepository;
 import com.namber.mymusic.model.Song;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
@@ -41,5 +43,9 @@ public class SongService {
 
     public FileInputStream getSource(String title) throws Exception {
         return songRepository.getSongSource(title);
+    }
+
+    public byte[] getThumbnail(String title) throws Exception{
+        return songRepository.getImage(title);
     }
 }
