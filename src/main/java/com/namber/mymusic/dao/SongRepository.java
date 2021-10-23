@@ -2,9 +2,12 @@ package com.namber.mymusic.dao;
 
 import com.google.gson.Gson;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
 import com.namber.mymusic.config.MongoDBConfig;
 import com.namber.mymusic.model.Song;
+import com.namber.mymusic.model.request.SongQuery;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.bson.Document;
 import org.farng.mp3.AbstractMP3FragmentBody;
 import org.farng.mp3.MP3File;
@@ -13,15 +16,20 @@ import org.farng.mp3.id3.AbstractID3v2Frame;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import javax.imageio.stream.FileImageOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 @Repository
 @Slf4j
@@ -36,6 +44,13 @@ public class SongRepository {
     @Autowired
     @Qualifier("songCollection")
     MongoCollection<Document> collection;
+
+    @Value("${mongo.query.maxLimit}")
+    private int MAX_LIMIT;
+
+    @Value("${inventory.defaultIconPath}")
+    private String defaultIconPath;
+
 
     private Document docParser = new Document();
     private Gson gson = new Gson();
@@ -101,33 +116,42 @@ public class SongRepository {
         if( songDoc != null ){
             src = mapper.map( songDoc , Song.class).getSrc();
         }
-//        src= "C:\\Users\\amber\\Downloads\\Arziyan.mp3";
-        byte[] data =null;
-        MP3File mp3=new MP3File(src);
-        AbstractID3v2 id3v2 = mp3.getID3v2Tag();
-        if(id3v2 != null){
-            Iterator iter = id3v2.getFrameIterator();
-            AbstractID3v2Frame apic =null;
-            while(iter.hasNext()){
-                AbstractID3v2Frame frame= (AbstractID3v2Frame) iter.next();
-                if(frame.getIdentifier().startsWith("APIC")){
-                    apic = frame;
+
+        try {
+
+
+            byte[] data = null;
+            MP3File mp3 = new MP3File(src);
+            AbstractID3v2 id3v2 = mp3.getID3v2Tag();
+            if (id3v2 != null) {
+                Iterator iter = id3v2.getFrameIterator();
+                AbstractID3v2Frame apic = null;
+                while (iter.hasNext()) {
+                    AbstractID3v2Frame frame = (AbstractID3v2Frame) iter.next();
+                    if (frame.getIdentifier().startsWith("APIC")) {
+                        apic = frame;
+                    }
+
+                }
+                if (apic != null) {
+                    AbstractMP3FragmentBody body = apic.getBody();
+                    data = (byte[]) body.getObject("Picture Data");
+                    if (data[0] == 0) {
+                        return Arrays.copyOfRange(data, 1, data.length);
+                    }
+                    return data;
+
+//                FileImageOutputStream outputStream = new FileImageOutputStream(new File("C:\\Users\\amber\\Downloads\\folder-out.jpg"));
+//                outputStream.write(data);
+//                outputStream.close();
                 }
 
             }
-            if (apic != null){
-                AbstractMP3FragmentBody body=apic.getBody();
-                data =  (byte[])body.getObject("Picture Data");
-                return Arrays.copyOfRange(data, 1, data.length);
-
-//                FileImageOutputStream outputStream = new FileImageOutputStream(new File("C:\\Users\\amber\\Downloads\\img-test.jpg"));
-//                outputStream.write(data, 1, data.length -1);
-//                outputStream.close();
-            }
-
+        }catch(Exception e){
+            log.error("Icon retrival issue with song: {}", title);
         }
 
-
+//
 //        InputStream imgInput = new FileInputStream(src);
 //        byte[] img = IOUtils.toByteArray(imgInput);
 //        imgInput.close();
@@ -138,13 +162,56 @@ public class SongRepository {
 //        ImageIO.write((BufferedImage) icn, "jpg", output);
 //        byte[] data2 = output.toByteArray();
 //        icn = icn.getScaledInstance(32,32, Image.SCALE_SMOOTH);
-//        FileImageOutputStream outputStream = new FileImageOutputStream(new File("C:\\Users\\amber\\Downloads\\img-test.jpeg"));
+//        FileImageOutputStream outputStream = new FileImageOutputStream(new File("C:\\Users\\amber\\Downloads\\folder.jpeg"));
 //        outputStream.write(data2);
 //        outputStream.close();
 
-        File file = new File("C:\\Users\\amber\\Downloads\\img-test2.jpg");
-        byte[] data2 = Files.readAllBytes(file.toPath());
+//        File file = new File("C:\\Users\\amber\\Downloads\\folder.jpg");
+//        byte[] data2 = Files.readAllBytes(file.toPath());
 
-        return null;
+        return Files.readAllBytes(new File(defaultIconPath).toPath());
+    }
+
+    public ArrayList<Song> querySong(SongQuery query) {
+        ArrayList<Song> songList = new ArrayList<>();
+        Document mongoQuery = buildSongQuery(query);
+        int limit = query.getLimit() > 0 ? query.getLimit(): MAX_LIMIT;
+        int offset = query.getOffset() > 0 ? query.getOffset(): 0;
+        collection.find(mongoQuery).skip(offset).limit(limit).forEach((Consumer) songDoc -> {
+            songList.add(mapper.map(songDoc, Song.class));
+        });
+        return songList;
+    }
+
+    private Document buildSongQuery(SongQuery reqQuery) {
+        Document query = new Document();
+        if (reqQuery.getTitle()!= null) {
+            query.append("title", new Document("$regex", ".*" +Pattern.quote(reqQuery.getTitle()) + ".*").append("$options", 'i'));
+        }
+        if (reqQuery.getCategory()!= null){
+            query.append("category", new Document("$regex", "^(?i)" +Pattern.quote(reqQuery.getCategory())));
+        }
+
+        if(reqQuery.getIn() != null){
+            query.append("title", new Document("$in", reqQuery.getIn()));
+        }
+
+//        if(reqQuery.getOr()!=null){
+//            List<Document> orList = new ArrayList<Document>();
+//            reqQuery.getOr().forEach( orQuery -> {
+//                orList.add(buildSongQuery(orQuery));
+//            });
+//            query.append("$or", orList);
+//        }
+//
+//        if(reqQuery.getAnd()!=null){
+//            List<Document> andList = new ArrayList<Document>();
+//            reqQuery.getAnd().forEach( andQuery -> {
+//                andList.add(buildSongQuery(andQuery));
+//            });
+//            query.append("$and", andList);
+//        }
+
+        return query;
     }
 }

@@ -1,33 +1,21 @@
 package com.namber.mymusic.job;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
+import com.namber.mymusic.job.constant.SongAttrConstants;
 import com.namber.mymusic.model.Song;
 import com.namber.mymusic.service.SongService;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.Property;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.mp3.Mp3Parser;
-import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.*;
-import java.lang.reflect.Type;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributeView;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -99,14 +87,21 @@ public class SongPusher {
         parser.parse(input, contentHandler, metadata, parseContext);
         input.close();
 
-        log.info("MetaData: {}", metadata.toString());
+//        log.info("MetaData: {}", metadata.toString());
 
         Song songData = new Song();
         songData.setArtist(getFromMetadata(metadata, SongAttrConstants.ARTIST));
         songData.setAlbum(getFromMetadata(metadata, SongAttrConstants.ALBUM));
-        songData.setTitle(getFromMetadata(metadata, SongAttrConstants.TITLE));
+        songData.setTitle(formatTitle(getFromMetadata(metadata, SongAttrConstants.TITLE)));
+        songData.setGenre(getFromMetadata(metadata, SongAttrConstants.GENRE));
+        songData.setAlbumArtist(getFromMetadata(metadata, SongAttrConstants.ALBUM_ARTIST));
+        songData.setYear(getFromMetadata(metadata, SongAttrConstants.YEAR));
         songData.setSrc(inventoryPath + "\\" + song.getName());
         return songData;
+    }
+
+    private String formatTitle(String fromMetadata) {
+        return fromMetadata.split("-")[0];
     }
 
     private String getFromMetadata(Metadata metadata, String valKey){

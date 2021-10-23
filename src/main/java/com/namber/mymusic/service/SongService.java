@@ -2,6 +2,7 @@ package com.namber.mymusic.service;
 
 import com.namber.mymusic.dao.SongRepository;
 import com.namber.mymusic.model.Song;
+import com.namber.mymusic.model.request.SongQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,10 @@ public class SongService {
 
     public ArrayList<Song> getSongs(ArrayList<String> titles) {
         return songRepository.getListedSongs(titles);
+    }
+
+    public ArrayList<Song> getSongs(SongQuery query) {
+        return songRepository.querySong(query);
     }
 
     public void saveNew(ArrayList<Song> songList) {

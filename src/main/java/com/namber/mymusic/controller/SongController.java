@@ -1,6 +1,7 @@
 package com.namber.mymusic.controller;
 
 import com.namber.mymusic.model.Song;
+import com.namber.mymusic.model.request.SongQuery;
 import com.namber.mymusic.service.SongService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -29,6 +30,11 @@ public class SongController {
     @PostMapping("/get-listed-songs")
     public ArrayList<Song> getSongs(@RequestBody ArrayList<String> titles){
         return songService.getSongs(titles);
+    }
+
+    @PostMapping("/query")
+    public ArrayList<Song> getSongsByQuery(@RequestBody SongQuery query){
+        return songService.getSongs(query);
     }
 
     @PostMapping("/add-song")

@@ -10,6 +10,9 @@ public class Song{
     private String title;
     private String artist;
     private String album;
-    private Duration duration;
+    private String category;
     private String src;
+    private String genre;
+    private String albumArtist;
+    private String year;
 }

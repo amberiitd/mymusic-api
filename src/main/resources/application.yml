@@ -3,6 +3,8 @@ mongo:
   db: mymusic
   songCollection: song
   userPrefCollection: userPref
+  query:
+    maxLimit: 20
 
 swagger:
   oauth:
@@ -22,6 +24,7 @@ resource:
 
 inventory:
   rootPath: C:\Users\amber\inventory\mymusic
+  defaultIconPath: C:\Users\amber\inventory\mymusic\img\music-icon.jpg
 
 #logging.level.org.springframework.web: DEBUG
 #logging.level.io.springfox: DEBUG
